@@ -33,30 +33,31 @@ const checkFitnessScore = (chromossome: Chromossome) => {
 	const decodedChromossome = chromossome.map((gene: Gene) => {
 		return decode(gene)
 	})
+	return decodedChromossome
 }
 const decode = (gene: Gene): string => {
 	const stringGene = gene
 		.map((bit) => String(bit))
 		.reduce((pv, cv) => pv.concat(cv))
-	return translation.filter((line) => line[0] === stringGene)
+	return translation[stringGene]
 }
 
-const translation = [
-	['0000', '0'],
-	['0001', '1'],
-	['0010', '2'],
-	['0011', '3'],
-	['0100', '4'],
-	['0101', '5'],
-	['0110', '6'],
-	['0111', '7'],
-	['1000', '8'],
-	['1001', '9'],
-	['1010', '+'],
-	['1011', '-'],
-	['1100', '*'],
-	['1101', '/'],
-]
+const translation: {[index: string]: string} = {
+	'0000': '0',
+	'0001': '1',
+	'0010': '2',
+	'0011': '3',
+	'0100': '4',
+	'0101': '5',
+	'0110': '6',
+	'0111': '7',
+	'1000': '8',
+	'1001': '9',
+	'1010': '+',
+	'1011': '-',
+	'1100': '*',
+	'1101': '/',
+}
 
-console.log('decode([0, 0, 1, 0]): ', decode([0, 0, 1, 0] as unknown as Gene))
+console.log('decode([0, 0, 1, 1]): ', decode([1, 1, 0, 1] as unknown as Gene))
 // console.log('createPopulation(5, 10): ', createPopulation(5, 10))
