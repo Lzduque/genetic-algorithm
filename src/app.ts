@@ -35,7 +35,7 @@ const checkFitnessScore = (chromossome: Chromossome) => {
 		return decode(gene)
 	})
 	const cleanupChromossome: string[] = cleanup(decodedChromossome)
-	return cleanupChromossome
+	return calculate(cleanupChromossome)
 }
 
 const decode = (gene: Gene): string => {
@@ -45,7 +45,7 @@ const decode = (gene: Gene): string => {
 	return translation[stringGene]
 }
 
-const cleanup = (equation: string[]) => {
+const cleanup = (equation: string[]): string[] => {
 	const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 	const symbols = ['+', '-', '*', '/']
 	const initialValue: {valueTrack: string; equation: string[]} = {
@@ -82,38 +82,56 @@ const cleanup = (equation: string[]) => {
 		: cleanedEq
 }
 
-const calculate = (equation: string[]) => {
+const calculate = (equation: string[]): string[] => {
 	const firstOp = ['*', '/']
 	const secondOp = ['+', '-']
-	const initialValue: {valueTrack: string; equation: string[]} = {
-		valueTrack: 'firstOp',
-		equation: [''],
-	}
-	const result = equation.reduce(
-		(
-			acc: {valueTrack: string; equation: string[]},
-			current: string
-		): {valueTrack: string; equation: string[]} => {
-			if (acc.valueTrack === 'firstOp' && firstOp.includes(current)) {
-				return {
-					valueTrack: 'symbol',
-					equation: [...acc.equation, current],
-				}
-			} else if (
-				acc.valueTrack === 'symbol' &&
-				symbols.includes(current)
-			) {
-				return {
-					valueTrack: 'number',
-					equation: [...acc.equation, current],
+	const firstResult = equation.reduce(
+		(acc: string[], current: string, currentIndex: number): string[] => {
+			if (firstOp.includes(current)) {
+				const firstNum = equation[currentIndex - 1]
+				const operator = equation[currentIndex]
+				const secondNum = equation[currentIndex + 1]
+				if (operator === '*') {
+					const x = String(Number(firstNum) * Number(secondNum))
+					const startEq = equation.slice(0, currentIndex - 1)
+					const endEq = equation.slice(currentIndex + 2)
+					return [...startEq, x, ...endEq]
+				} else {
+					const x = String(Number(firstNum) / Number(secondNum))
+					const startEq = equation.slice(0, currentIndex - 1)
+					const endEq = equation.slice(currentIndex + 2)
+					return [...startEq, x, ...endEq]
 				}
 			} else {
 				return acc
 			}
 		},
-		initialValue
-	).equation
-	return equation
+		['']
+	)
+	const secondResult = firstResult.reduce(
+		(acc: string[], current: string, currentIndex: number): string[] => {
+			if (secondOp.includes(current)) {
+				const firstNum = firstResult[currentIndex - 1]
+				const operator = firstResult[currentIndex]
+				const secondNum = firstResult[currentIndex + 1]
+				if (operator === '+') {
+					const x = String(Number(firstNum) + Number(secondNum))
+					const startEq = firstResult.slice(0, currentIndex - 1)
+					const endEq = firstResult.slice(currentIndex + 2)
+					return [...startEq, x, ...endEq]
+				} else {
+					const x = String(Number(firstNum) - Number(secondNum))
+					const startEq = firstResult.slice(0, currentIndex - 1)
+					const endEq = firstResult.slice(currentIndex + 2)
+					return [...startEq, x, ...endEq]
+				}
+			} else {
+				return acc
+			}
+		},
+		['']
+	)
+	return secondResult
 }
 
 const translation: {[index: string]: string} = {
@@ -146,7 +164,9 @@ console.log(
 		[1, 1, 1, 1],
 		[1, 1, 1, 0],
 		[1, 1, 1, 1],
+		[1, 0, 1, 0],
+		[0, 0, 1, 0],
 	] as unknown as Chromossome)
 )
-console.log('calculate: ', calculate(['2', '*', '3']))
+console.log('calculate: ', calculate(['2', '*', '3', '+', '2']))
 // console.log('createPopulation(5, 10): ', createPopulation(5, 10))
