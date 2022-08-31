@@ -1,9 +1,9 @@
 // Given the digits 0 through 9 and the operators +, -, * and /,  find a sequence that will represent a given target number. The operators will be applied sequentially from left to right as you read.
 
 type Bit = number
-type Gene = [Bit]
-type Chromossome = [Gene]
-type Population = [Chromossome]
+type Gene = Bit[]
+type Chromossome = Gene[]
+type Population = Chromossome[]
 
 console.log('Hello')
 
@@ -34,7 +34,8 @@ const checkFitnessScore = (chromossome: Chromossome) => {
 	const decodedChromossome = chromossome.map((gene: Gene) => {
 		return decode(gene)
 	})
-	return decodedChromossome
+	const cleanupChromossome: string[] = cleanup(decodedChromossome)
+	return cleanupChromossome
 }
 
 const decode = (gene: Gene): string => {
@@ -44,20 +45,75 @@ const decode = (gene: Gene): string => {
 	return translation[stringGene]
 }
 
-const cleanup = (equation: [string]) => {
+const cleanup = (equation: string[]) => {
 	const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 	const symbols = ['+', '-', '*', '/']
-	const initialValue: {valueTrack: string; equation: [string]} = {
+	const initialValue: {valueTrack: string; equation: string[]} = {
 		valueTrack: 'number',
+		equation: [],
+	}
+	const cleanedEq = equation.reduce(
+		(
+			acc: {valueTrack: string; equation: string[]},
+			current: string
+		): {valueTrack: string; equation: string[]} => {
+			if (acc.valueTrack === 'number' && numbers.includes(current)) {
+				return {
+					valueTrack: 'symbol',
+					equation: [...acc.equation, current],
+				}
+			} else if (
+				acc.valueTrack === 'symbol' &&
+				symbols.includes(current)
+			) {
+				return {
+					valueTrack: 'number',
+					equation: [...acc.equation, current],
+				}
+			} else {
+				return acc
+			}
+		},
+		initialValue
+	).equation
+
+	return symbols.includes(cleanedEq[cleanedEq.length - 1])
+		? cleanedEq.slice(0, -1)
+		: cleanedEq
+}
+
+const calculate = (equation: string[]) => {
+	const firstOp = ['*', '/']
+	const secondOp = ['+', '-']
+	const initialValue: {valueTrack: string; equation: string[]} = {
+		valueTrack: 'firstOp',
 		equation: [''],
 	}
-	equation.reduce((pv, cv) => {
-		if (pv.valueTrack === 'number' && numbers.includes(cv)) {
-			return {valueTrack: 'symbol', equation: pv.equation.push(cv)}
-		} else if (pv.valueTrack === 'symbol' && symbols.includes(cv)) {
-			return {valueTrack: 'number', equation: pv.equation.push(cv)}
-		}
-	}, initialValue)
+	const result = equation.reduce(
+		(
+			acc: {valueTrack: string; equation: string[]},
+			current: string
+		): {valueTrack: string; equation: string[]} => {
+			if (acc.valueTrack === 'firstOp' && firstOp.includes(current)) {
+				return {
+					valueTrack: 'symbol',
+					equation: [...acc.equation, current],
+				}
+			} else if (
+				acc.valueTrack === 'symbol' &&
+				symbols.includes(current)
+			) {
+				return {
+					valueTrack: 'number',
+					equation: [...acc.equation, current],
+				}
+			} else {
+				return acc
+			}
+		},
+		initialValue
+	).equation
+	return equation
 }
 
 const translation: {[index: string]: string} = {
@@ -92,4 +148,5 @@ console.log(
 		[1, 1, 1, 1],
 	] as unknown as Chromossome)
 )
+console.log('calculate: ', calculate(['2', '*', '3']))
 // console.log('createPopulation(5, 10): ', createPopulation(5, 10))
