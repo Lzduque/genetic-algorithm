@@ -30,12 +30,13 @@ const createBit = (): Bit => {
 const initialPopulation: Population = createPopulation(5, 10)
 
 // :number ??
-const checkFitnessScore = (chromossome: Chromossome) => {
+const checkFitnessScore = (chromossome: Chromossome, goal: number) => {
 	const decodedChromossome = chromossome.map((gene: Gene) => {
 		return decode(gene)
 	})
 	const cleanupChromossome: string[] = cleanup(decodedChromossome)
-	return calculate(cleanupChromossome)
+	const result = calculateEq(cleanupChromossome)
+	return 1 / (goal - result)
 }
 
 const decode = (gene: Gene): string => {
@@ -77,12 +78,13 @@ const cleanup = (equation: string[]): string[] => {
 		initialValue
 	).equation
 
+	// console.log('cleanedEq: ', cleanedEq)
 	return symbols.includes(cleanedEq[cleanedEq.length - 1])
 		? cleanedEq.slice(0, -1)
 		: cleanedEq
 }
 
-const calculate = (equation: string[]): string[] => {
+const calculateEq = (equation: string[]): number => {
 	const firstOp = ['*', '/']
 	const secondOp = ['+', '-']
 	const firstResult = equation.reduce(
@@ -131,7 +133,8 @@ const calculate = (equation: string[]): string[] => {
 		},
 		['']
 	)
-	return secondResult
+	console.log('result: ', Number(secondResult[0]))
+	return Number(secondResult[0])
 }
 
 const translation: {[index: string]: string} = {
@@ -152,21 +155,24 @@ const translation: {[index: string]: string} = {
 }
 
 console.log(
-	'checkFitnessScore: ',
-	checkFitnessScore([
-		[0, 0, 1, 0],
-		[0, 0, 0, 0],
-		[1, 1, 0, 0],
-		[0, 0, 1, 1],
-		[0, 0, 0, 0],
-		[0, 0, 0, 0],
-		[1, 0, 1, 0],
-		[1, 1, 1, 1],
-		[1, 1, 1, 0],
-		[1, 1, 1, 1],
-		[1, 0, 1, 0],
-		[0, 0, 1, 0],
-	] as unknown as Chromossome)
+	'checkFitnessScore 23: ',
+	checkFitnessScore(
+		[
+			[0, 0, 1, 0],
+			[0, 0, 0, 0],
+			[1, 1, 0, 0],
+			[0, 1, 0, 0],
+			[0, 0, 0, 0],
+			[0, 0, 0, 0],
+			[1, 0, 1, 0],
+			[1, 1, 1, 1],
+			[1, 1, 1, 0],
+			[1, 1, 1, 1],
+			[1, 0, 1, 0],
+			[1, 0, 0, 1],
+		] as unknown as Chromossome,
+		23
+	)
 )
-console.log('calculate: ', calculate(['2', '*', '3', '+', '2']))
+// console.log('calculate: ', calculateEq(['2', '*', '3', '+', '2']))
 // console.log('createPopulation(5, 10): ', createPopulation(5, 10))
