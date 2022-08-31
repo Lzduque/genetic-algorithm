@@ -29,17 +29,35 @@ const createBit = (): Bit => {
 
 const initialPopulation: Population = createPopulation(5, 10)
 
+// :number ??
 const checkFitnessScore = (chromossome: Chromossome) => {
 	const decodedChromossome = chromossome.map((gene: Gene) => {
 		return decode(gene)
 	})
 	return decodedChromossome
 }
+
 const decode = (gene: Gene): string => {
 	const stringGene = gene
 		.map((bit) => String(bit))
 		.reduce((pv, cv) => pv.concat(cv))
 	return translation[stringGene]
+}
+
+const cleanup = (equation: [string]) => {
+	const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+	const symbols = ['+', '-', '*', '/']
+	const initialValue: {valueTrack: string; equation: [string]} = {
+		valueTrack: 'number',
+		equation: [''],
+	}
+	equation.reduce((pv, cv) => {
+		if (pv.valueTrack === 'number' && numbers.includes(cv)) {
+			return {valueTrack: 'symbol', equation: pv.equation.push(cv)}
+		} else if (pv.valueTrack === 'symbol' && symbols.includes(cv)) {
+			return {valueTrack: 'number', equation: pv.equation.push(cv)}
+		}
+	}, initialValue)
 }
 
 const translation: {[index: string]: string} = {
@@ -59,5 +77,19 @@ const translation: {[index: string]: string} = {
 	'1101': '/',
 }
 
-console.log('decode([0, 0, 1, 1]): ', decode([1, 1, 0, 1] as unknown as Gene))
+console.log(
+	'checkFitnessScore: ',
+	checkFitnessScore([
+		[0, 0, 1, 0],
+		[0, 0, 0, 0],
+		[1, 1, 0, 0],
+		[0, 0, 1, 1],
+		[0, 0, 0, 0],
+		[0, 0, 0, 0],
+		[1, 0, 1, 0],
+		[1, 1, 1, 1],
+		[1, 1, 1, 0],
+		[1, 1, 1, 1],
+	] as unknown as Chromossome)
+)
 // console.log('createPopulation(5, 10): ', createPopulation(5, 10))
