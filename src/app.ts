@@ -1,18 +1,34 @@
 // Given the digits 0 through 9 and the operators +, -, * and /,  find a sequence that will represent a given target number. The operators will be applied sequentially from left to right as you read.
 
+// TYPES
 type Bit = number
 type Gene = Bit[]
 type Chromossome = Gene[]
 type Population = Chromossome[]
 
-console.log('Hello')
-
-// FIRST Generate a number of random chromossomes = population
+const translation: {[index: string]: string} = {
+	'0000': '0',
+	'0001': '1',
+	'0010': '2',
+	'0011': '3',
+	'0100': '4',
+	'0101': '5',
+	'0110': '6',
+	'0111': '7',
+	'1000': '8',
+	'1001': '9',
+	'1010': '+',
+	'1011': '-',
+	'1100': '*',
+	'1101': '/',
+}
 
 const createPopulation = (popSize: number, chromSize: number): Population => {
-	return Array.apply(null, Array(popSize)).map(() =>
-		createChromossome(chromSize)
-	) as Population
+	return Array.apply(null, Array(popSize)).map(() => {
+		const chrom = createChromossome(chromSize)
+		// console.log('chrom: ', chrom)
+		return chrom
+	}) as Population
 }
 
 const createChromossome = (size: number): Chromossome => {
@@ -27,15 +43,15 @@ const createBit = (): Bit => {
 	return Math.floor(Math.random() * 2) as Bit
 }
 
-const initialPopulation: Population = createPopulation(5, 10)
-
-// :number ??
-const checkFitnessScore = (chromossome: Chromossome, goal: number) => {
+const checkFitnessScore = (chromossome: Chromossome): number => {
 	const decodedChromossome = chromossome.map((gene: Gene) => {
 		return decode(gene)
 	})
+	console.log('decodedChromossome: ', decodedChromossome)
 	const cleanupChromossome: string[] = cleanup(decodedChromossome)
+	console.log('cleanupChromossome: ', cleanupChromossome)
 	const result = calculateEq(cleanupChromossome)
+	console.log('result: ', result)
 	return 1 / (goal - result)
 }
 
@@ -87,92 +103,140 @@ const cleanup = (equation: string[]): string[] => {
 const calculateEq = (equation: string[]): number => {
 	const firstOp = ['*', '/']
 	const secondOp = ['+', '-']
+	if (equation.length <= 1) {
+		console.log('Equation is short')
+		return Number(equation[0])
+	}
 	const firstResult = equation.reduce(
-		(acc: string[], current: string, currentIndex: number): string[] => {
+		(acc: string[], current: string): string[] => {
 			if (firstOp.includes(current)) {
-				const firstNum = equation[currentIndex - 1]
-				const operator = equation[currentIndex]
-				const secondNum = equation[currentIndex + 1]
-				if (operator === '*') {
+				// console.log('acc: ', acc)
+				// console.log('current: ', current)
+				if (acc.indexOf('*') > -1) {
+					// console.log('--> multiplication')
+					const index = acc.indexOf('*')
+					const firstNum = acc[index - 1]
+					const secondNum = acc[index + 1]
+					// console.log('-> firstNum: ', firstNum)
+					// console.log('-> secondNum: ', secondNum)
 					const x = String(Number(firstNum) * Number(secondNum))
-					const startEq = equation.slice(0, currentIndex - 1)
-					const endEq = equation.slice(currentIndex + 2)
+					const startEq = acc.slice(0, index - 1)
+					const endEq = acc.slice(index + 2)
+					// console.log('--> x: ', x)
+					// console.log('--> startEq: ', startEq)
+					// console.log('--> endEq: ', endEq)
+					// console.log('--> [...startEq, x, ...endEq]: ', [
+					// 	...startEq,
+					// 	x,
+					// 	...endEq,
+					// ])
 					return [...startEq, x, ...endEq]
 				} else {
+					// console.log('--> division')
+					const index = acc.indexOf('/')
+					const firstNum = acc[index - 1]
+					const secondNum = acc[index + 1]
+					// console.log('-> firstNum: ', firstNum)
+					// console.log('-> secondNum: ', secondNum)
 					const x = String(Number(firstNum) / Number(secondNum))
-					const startEq = equation.slice(0, currentIndex - 1)
-					const endEq = equation.slice(currentIndex + 2)
+					const startEq = acc.slice(0, index - 1)
+					const endEq = acc.slice(index + 2)
 					return [...startEq, x, ...endEq]
 				}
 			} else {
 				return acc
 			}
 		},
-		['']
+		equation
 	)
+	// console.log('firstResult: ', firstResult)
 	const secondResult = firstResult.reduce(
-		(acc: string[], current: string, currentIndex: number): string[] => {
+		(acc: string[], current: string): string[] => {
 			if (secondOp.includes(current)) {
-				const firstNum = firstResult[currentIndex - 1]
-				const operator = firstResult[currentIndex]
-				const secondNum = firstResult[currentIndex + 1]
-				if (operator === '+') {
+				// console.log('acc: ', acc)
+				// console.log('current: ', current)
+				if (acc.indexOf('+') > -1) {
+					// console.log('--> addition')
+					const index = acc.indexOf('+')
+					const firstNum = acc[index - 1]
+					const secondNum = acc[index + 1]
+					// console.log('-> firstNum: ', firstNum)
+					// console.log('-> secondNum: ', secondNum)
 					const x = String(Number(firstNum) + Number(secondNum))
-					const startEq = firstResult.slice(0, currentIndex - 1)
-					const endEq = firstResult.slice(currentIndex + 2)
+					const startEq = acc.slice(0, index - 1)
+					const endEq = acc.slice(index + 2)
+					// console.log('--> x: ', x)
+					// console.log('--> startEq: ', startEq)
+					// console.log('--> endEq: ', endEq)
+					// console.log('--> [...startEq, x, ...endEq]: ', [
+					// 	...startEq,
+					// 	x,
+					// 	...endEq,
+					// ])
 					return [...startEq, x, ...endEq]
 				} else {
+					// console.log('--> subtraction')
+					const index = acc.indexOf('-')
+					const firstNum = acc[index - 1]
+					const secondNum = acc[index + 1]
+					// console.log('-> firstNum: ', firstNum)
+					// console.log('-> secondNum: ', secondNum)
 					const x = String(Number(firstNum) - Number(secondNum))
-					const startEq = firstResult.slice(0, currentIndex - 1)
-					const endEq = firstResult.slice(currentIndex + 2)
+					const startEq = acc.slice(0, index - 1)
+					const endEq = acc.slice(index + 2)
 					return [...startEq, x, ...endEq]
 				}
 			} else {
 				return acc
 			}
 		},
-		['']
+		firstResult
 	)
-	console.log('result: ', Number(secondResult[0]))
+	// console.log('secondResult: ', secondResult)
+	// console.log('result: ', Number(secondResult[0]))
 	return Number(secondResult[0])
 }
 
-const translation: {[index: string]: string} = {
-	'0000': '0',
-	'0001': '1',
-	'0010': '2',
-	'0011': '3',
-	'0100': '4',
-	'0101': '5',
-	'0110': '6',
-	'0111': '7',
-	'1000': '8',
-	'1001': '9',
-	'1010': '+',
-	'1011': '-',
-	'1100': '*',
-	'1101': '/',
+const chromossomeSize = 10
+const populationSize = 5
+const goal = 23
+const initialPopulation: Population = createPopulation(
+	populationSize,
+	chromossomeSize
+)
+
+const gameLoop = () => {
+	return initialPopulation.map((chrom: Chromossome) => {
+		const fitness = checkFitnessScore(chrom)
+		// if (fitness === 1) {
+		// 	return chrom
+		// }
+		return {chrom, fitness}
+	})
 }
 
-console.log(
-	'checkFitnessScore 23: ',
-	checkFitnessScore(
-		[
-			[0, 0, 1, 0],
-			[0, 0, 0, 0],
-			[1, 1, 0, 0],
-			[0, 1, 0, 0],
-			[0, 0, 0, 0],
-			[0, 0, 0, 0],
-			[1, 0, 1, 0],
-			[1, 1, 1, 1],
-			[1, 1, 1, 0],
-			[1, 1, 1, 1],
-			[1, 0, 1, 0],
-			[1, 0, 0, 1],
-		] as unknown as Chromossome,
-		23
-	)
-)
-// console.log('calculate: ', calculateEq(['2', '*', '3', '+', '2']))
+console.log('-> gameLoop:', gameLoop())
+
+// console.log(
+// 	'checkFitnessScore: ',
+// 	checkFitnessScore([
+// 		[0, 0, 1, 0],
+// 		[0, 0, 0, 0],
+// 		[1, 1, 0, 0],
+// 		[0, 1, 0, 0],
+// 		[0, 0, 0, 0],
+// 		[0, 0, 0, 0],
+// 		[1, 0, 1, 0],
+// 		[1, 1, 1, 1],
+// 		[1, 1, 1, 0],
+// 		[1, 1, 1, 1],
+// 		[1, 0, 1, 0],
+// 		[1, 0, 0, 1],
+// 	] as unknown as Chromossome)
+// )
+// console.log(
+// 	"calculateEq ['2', '*', '4', '+', '6', '*', '9']: ",
+// 	calculateEq(['2', '*', '4', '+', '6', '*', '9'])
+// )
+// console.log("calculateEq ['6', '*', '8']: ", calculateEq(['6', '*', '8']))
 // console.log('createPopulation(5, 10): ', createPopulation(5, 10))
