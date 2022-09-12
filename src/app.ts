@@ -5,6 +5,8 @@ type Bit = number
 type Gene = Bit[]
 type Chromossome = Gene[]
 type Population = Chromossome[]
+type Fitness = {chromossome: Chromossome; fitnessScore: number}
+type PopulationFitness = Fitness[]
 
 const translation: {[index: string]: string} = {
 	'0000': '0',
@@ -47,12 +49,23 @@ const checkFitnessScore = (chromossome: Chromossome): number => {
 	const decodedChromossome = chromossome.map((gene: Gene) => {
 		return decode(gene)
 	})
-	console.log('decodedChromossome: ', decodedChromossome)
+	// console.log('decodedChromossome: ', decodedChromossome)
 	const cleanupChromossome: string[] = cleanup(decodedChromossome)
-	console.log('cleanupChromossome: ', cleanupChromossome)
+	// console.log('cleanupChromossome: ', cleanupChromossome)
 	const result = calculateEq(cleanupChromossome)
-	console.log('result: ', result)
+	// console.log('result: ', result)
 	return 1 / (goal - result)
+}
+
+const groupFitnessScore = (population: Population): PopulationFitness => {
+	return population.map((chrom: Chromossome) => {
+		const fitness = checkFitnessScore(chrom)
+		if (fitness === 1) {
+			console.log('PERFECT RESULT FOUND')
+			return {chromossome: chrom, fitnessScore: fitness}
+		}
+		return {chromossome: chrom, fitnessScore: fitness}
+	})
 }
 
 const decode = (gene: Gene): string => {
@@ -104,7 +117,7 @@ const calculateEq = (equation: string[]): number => {
 	const firstOp = ['*', '/']
 	const secondOp = ['+', '-']
 	if (equation.length <= 1) {
-		console.log('Equation is short')
+		// console.log('Equation is short')
 		return Number(equation[0])
 	}
 	const firstResult = equation.reduce(
@@ -206,13 +219,9 @@ const initialPopulation: Population = createPopulation(
 )
 
 const gameLoop = () => {
-	return initialPopulation.map((chrom: Chromossome) => {
-		const fitness = checkFitnessScore(chrom)
-		// if (fitness === 1) {
-		// 	return chrom
-		// }
-		return {chrom, fitness}
-	})
+	const firstGenFitnessScore = groupFitnessScore(initialPopulation)
+
+	return firstGenFitnessScore
 }
 
 console.log('-> gameLoop:', gameLoop())
