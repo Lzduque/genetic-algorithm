@@ -7,6 +7,7 @@ type Chromossome = Gene[]
 type Population = Chromossome[]
 type Fitness = {chromossome: Chromossome; fitnessScore: number}
 type PopulationFitness = Fitness[]
+type RouletteWheel = {chromossome: Chromossome; start: number; end: number}[]
 
 const translation: {[index: string]: string} = {
 	'0000': '0',
@@ -54,7 +55,8 @@ const checkFitnessScore = (chromossome: Chromossome): number => {
 	// console.log('cleanupChromossome: ', cleanupChromossome)
 	const result = calculateEq(cleanupChromossome)
 	// console.log('result: ', result)
-	return 1 / (goal - result)
+	const denominator = goal - result < 0 ? result - goal : goal - result
+	return 1 / denominator
 }
 
 const groupFitnessScore = (population: Population): PopulationFitness => {
@@ -210,6 +212,21 @@ const calculateEq = (equation: string[]): number => {
 	return Number(secondResult[0])
 }
 
+const makeRouletteWheel = (popfitness: PopulationFitness): RouletteWheel => {
+	var positionStart = 0
+	return popfitness.map((fitness: Fitness) => {
+		const positionEnd = positionStart + fitness.fitnessScore
+		const piece = {
+			chromossome: fitness.chromossome,
+			start: positionStart,
+			end: positionEnd,
+		}
+		positionStart = positionEnd
+
+		return piece
+	})
+}
+
 const chromossomeSize = 10
 const populationSize = 5
 const goal = 23
@@ -221,7 +238,7 @@ const initialPopulation: Population = createPopulation(
 const gameLoop = () => {
 	const firstGenFitnessScore = groupFitnessScore(initialPopulation)
 
-	return firstGenFitnessScore
+	return makeRouletteWheel(firstGenFitnessScore)
 }
 
 console.log('-> gameLoop:', gameLoop())
