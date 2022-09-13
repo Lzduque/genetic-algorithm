@@ -8,6 +8,10 @@ type Population = Chromossome[]
 type Fitness = {chromossome: Chromossome; fitnessScore: number}
 type PopulationFitness = Fitness[]
 type RouletteWheel = {chromossome: Chromossome; start: number; end: number}[]
+type Couple = {
+	chromossome1: Chromossome
+	chromossome2: Chromossome
+}
 
 const translation: {[index: string]: string} = {
 	'0000': '0',
@@ -240,7 +244,7 @@ const makeRouletteWheel = (popfitness: PopulationFitness): RouletteWheel => {
 	return proportionalRoulette
 }
 
-const chooseCouple = (roulette: RouletteWheel) => {
+const chooseCouple = (roulette: RouletteWheel): Couple => {
 	const firstNum = Math.floor(Math.random() * 100)
 	const secondNum = Math.floor(Math.random() * 100)
 	const firstChrom = roulette.filter(
@@ -264,6 +268,42 @@ const chooseCouple = (roulette: RouletteWheel) => {
 	}
 }
 
+const checkCrossOver = () => {
+	const chance = Math.random()
+	console.log('Chance: ', chance)
+
+	return chance < crossOverRate ? true : false
+}
+
+const divideChromChunks = (binChrom: number[]) => {
+	// return binChrom.reduce((acc, current, index) => {
+	// 	const chunkIndex = Math.floor(index / 4)
+	// 	if (!acc[chunkIndex]) {
+	// 		acc[chunkIndex] = [] // start a new chunk
+	// 	}
+	// 	acc[chunkIndex].push(current)
+	// 	return acc
+	// }, [])
+}
+
+const crossOver = (couple: Couple) => {
+	const firstParent = couple.chromossome1.flat()
+	const secondParent = couple.chromossome2.flat()
+	const whereToSwap = Math.floor(Math.random() * chromossomeSize * 4)
+	console.log('whereToSwap: ', whereToSwap)
+
+	const firstChromBin = firstParent
+		.slice(0, whereToSwap)
+		.concat(secondParent.slice(whereToSwap))
+
+	const secondChromBin = secondParent
+		.slice(0, whereToSwap)
+		.concat(firstParent.slice(whereToSwap))
+
+	console.log('firstChromBin: ', firstChromBin)
+	console.log('secondChromBin: ', secondChromBin)
+}
+
 const chromossomeSize = 10
 const populationSize = 5
 const goal = 23
@@ -271,12 +311,14 @@ const initialPopulation: Population = createPopulation(
 	populationSize,
 	chromossomeSize
 )
+const crossOverRate = 0.7
 
 const gameLoop = () => {
 	const firstGenFitnessScore = groupFitnessScore(initialPopulation)
 	const roulette = makeRouletteWheel(firstGenFitnessScore)
-
 	const couple = chooseCouple(roulette)
+	const chanceForCrossOver = checkCrossOver()
+	crossOver(couple)
 	return couple
 }
 
