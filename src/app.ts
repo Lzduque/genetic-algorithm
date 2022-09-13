@@ -214,7 +214,7 @@ const calculateEq = (equation: string[]): number => {
 
 const makeRouletteWheel = (popfitness: PopulationFitness): RouletteWheel => {
 	var positionStart = 0
-	return popfitness.map((fitness: Fitness) => {
+	const simpleRoulette = popfitness.map((fitness: Fitness) => {
 		const positionEnd = positionStart + fitness.fitnessScore
 		const piece = {
 			chromossome: fitness.chromossome,
@@ -222,9 +222,46 @@ const makeRouletteWheel = (popfitness: PopulationFitness): RouletteWheel => {
 			end: positionEnd,
 		}
 		positionStart = positionEnd
-
 		return piece
 	})
+	const proportionalRoulette = simpleRoulette.map((fitness) => {
+		const start = (100 * fitness.start) / positionStart
+		const end = (100 * fitness.end) / positionStart
+		const piece = {
+			chromossome: fitness.chromossome,
+			start: start,
+			end: end,
+		}
+		console.log('start: ', start)
+		console.log('end: ', end)
+		return piece
+	})
+
+	return proportionalRoulette
+}
+
+const chooseCouple = (roulette: RouletteWheel) => {
+	const firstNum = Math.floor(Math.random() * 100)
+	const secondNum = Math.floor(Math.random() * 100)
+	const firstChrom = roulette.filter(
+		(chrom) => chrom.start < firstNum && chrom.end > firstNum
+	)[0]
+	const secondChrom = roulette.filter(
+		(chrom) => chrom.start < secondNum && chrom.end > secondNum
+	)[0]
+	if (firstChrom === secondChrom) {
+		console.log('SAME CHROMOSSOME PICKED')
+	}
+
+	console.log('firstNum: ', firstNum)
+	console.log('secondNum: ', secondNum)
+	console.log('firstChrom: ', firstChrom)
+	console.log('secondChrom: ', secondChrom)
+
+	return {
+		chromossome1: firstChrom.chromossome,
+		chromossome2: secondChrom.chromossome,
+	}
 }
 
 const chromossomeSize = 10
@@ -237,8 +274,10 @@ const initialPopulation: Population = createPopulation(
 
 const gameLoop = () => {
 	const firstGenFitnessScore = groupFitnessScore(initialPopulation)
+	const roulette = makeRouletteWheel(firstGenFitnessScore)
 
-	return makeRouletteWheel(firstGenFitnessScore)
+	const couple = chooseCouple(roulette)
+	return couple
 }
 
 console.log('-> gameLoop:', gameLoop())
@@ -260,6 +299,23 @@ console.log('-> gameLoop:', gameLoop())
 // 		[1, 0, 0, 1],
 // 	] as unknown as Chromossome)
 // )
+
+// console.log(
+// 	'checkFitnessScore: ',
+// 	checkFitnessScore([
+//     [ 1, 0, 1, 1 ],
+//     [ 0, 0, 0, 0 ],
+//     [ 1, 0, 0, 1 ],
+//     [ 1, 0, 1, 0 ],
+//     [ 1, 0, 1, 0 ],
+//     [ 1, 0, 1, 1 ],
+//     [ 0, 1, 1, 0 ],
+//     [ 1, 1, 0, 0 ],
+//     [ 0, 1, 0, 0 ],
+//     [ 1, 1, 1, 1 ]
+//   ] as unknown as Chromossome)
+// )
+
 // console.log(
 // 	"calculateEq ['2', '*', '4', '+', '6', '*', '9']: ",
 // 	calculateEq(['2', '*', '4', '+', '6', '*', '9'])
