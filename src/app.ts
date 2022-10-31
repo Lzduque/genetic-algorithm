@@ -256,7 +256,7 @@ const chooseCouple = (roulette: RouletteWheel): Couple => {
 	)[0]
 	if (firstChrom === secondChrom) {
 		console.log('----------> SAME CHROMOSSOME PICKED!!!')
-		chooseCouple(roulette)
+		return chooseCouple(roulette)
 	} else {
 		console.log('firstNum: ', firstNum)
 		console.log('secondNum: ', secondNum)
@@ -273,8 +273,17 @@ const chooseCouple = (roulette: RouletteWheel): Couple => {
 const checkCrossOver = () => {
 	const chance = Math.random()
 	console.log('Chance: ', chance)
+	console.log('crossOverRate: ', crossOverRate)
 
 	return chance < crossOverRate ? true : false
+}
+
+const checkMutation = () => {
+	const chance = Math.random()
+	console.log('Chance: ', chance)
+	console.log('mutationRate: ', mutationRate)
+
+	return chance < mutationRate ? true : false
 }
 
 const divideChromChunks = (binChrom: number[]) => {
@@ -286,6 +295,20 @@ const divideChromChunks = (binChrom: number[]) => {
 	// 	acc[chunkIndex].push(current)
 	// 	return acc
 	// }, [])
+}
+
+const mutateChromossomes = (
+	chromossomeBin: number[]
+): (number | undefined)[] => {
+	return chromossomeBin.map((number) => {
+		if (checkMutation()) {
+			console.log('--> MUTATION HAPPENED')
+			if (number === 1) return 0
+			if (number === 0) return 1
+		} else {
+			return number
+		}
+	})
 }
 
 const crossOver = (couple: Couple) => {
@@ -304,6 +327,12 @@ const crossOver = (couple: Couple) => {
 
 	console.log('firstChromBin: ', firstChromBin)
 	console.log('secondChromBin: ', secondChromBin)
+
+	const mutatedFirstChromBin = mutateChromossomes(firstChromBin)
+	const mutatedSecondChromBin = mutateChromossomes(secondChromBin)
+	console.log('mutatedFirstChromBin: ', mutatedFirstChromBin)
+	console.log('mutatedSecondChromBin: ', mutatedSecondChromBin)
+	// return new couple, after transforming them back into chromossomes
 }
 
 const chromossomeSize = 10
@@ -314,14 +343,15 @@ const initialPopulation: Population = createPopulation(
 	chromossomeSize
 )
 const crossOverRate = 0.7
+const mutationRate = 0.001
 
 const gameLoop = () => {
 	const firstGenFitnessScore = groupFitnessScore(initialPopulation)
 	const roulette = makeRouletteWheel(firstGenFitnessScore)
 	const couple = chooseCouple(roulette)
 	const chanceForCrossOver = checkCrossOver()
-	crossOver(couple)
-	return couple
+	const newChromossome = chanceForCrossOver ? crossOver(couple) : couple
+	// return couple
 }
 
 console.log('-> gameLoop:', gameLoop())
