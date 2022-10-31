@@ -246,25 +246,27 @@ const makeRouletteWheel = (popfitness: PopulationFitness): RouletteWheel => {
 
 const chooseCouple = (roulette: RouletteWheel): Couple => {
 	const firstNum = Math.floor(Math.random() * 100)
-	const secondNum = Math.floor(Math.random() * 100)
 	const firstChrom = roulette.filter(
 		(chrom) => chrom.start < firstNum && chrom.end > firstNum
 	)[0]
+
+	const secondNum = Math.floor(Math.random() * 100)
 	const secondChrom = roulette.filter(
 		(chrom) => chrom.start < secondNum && chrom.end > secondNum
 	)[0]
 	if (firstChrom === secondChrom) {
-		console.log('SAME CHROMOSSOME PICKED')
-	}
+		console.log('----------> SAME CHROMOSSOME PICKED!!!')
+		chooseCouple(roulette)
+	} else {
+		console.log('firstNum: ', firstNum)
+		console.log('secondNum: ', secondNum)
+		console.log('firstChrom: ', firstChrom)
+		console.log('secondChrom: ', secondChrom)
 
-	console.log('firstNum: ', firstNum)
-	console.log('secondNum: ', secondNum)
-	console.log('firstChrom: ', firstChrom)
-	console.log('secondChrom: ', secondChrom)
-
-	return {
-		chromossome1: firstChrom.chromossome,
-		chromossome2: secondChrom.chromossome,
+		return {
+			chromossome1: firstChrom.chromossome,
+			chromossome2: secondChrom.chromossome,
+		}
 	}
 }
 
