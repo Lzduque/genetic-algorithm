@@ -43,11 +43,11 @@ const createChromossome = (size: number): Chromossome => {
 }
 
 const createGene = (): Gene => {
-	return Array.apply(null, Array(4)).map(() => createBit()) as Gene
+	return Array.apply(null, Array(geneSize)).map(() => createBit()) as Gene
 }
 
-const createBit = (): Bit => {
-	return Math.floor(Math.random() * 2) as Bit
+const createBit = (num = 2): Bit => {
+	return num >= 2 ? (Math.floor(Math.random() * 2) as Bit) : (num as Bit)
 }
 
 const checkFitnessScore = (chromossome: Chromossome): number => {
@@ -71,6 +71,21 @@ const groupFitnessScore = (population: Population): PopulationFitness => {
 			return {chromossome: chrom, fitnessScore: fitness}
 		}
 		return {chromossome: chrom, fitnessScore: fitness}
+	})
+}
+
+const checkWinnerFitnessScore = (population: PopulationFitness): Fitness => {
+	return population.reduce((acc, item: Fitness) => {
+		if (item.fitnessScore > acc.fitnessScore) {
+			acc = {
+				chromossome: item.chromossome,
+				fitnessScore: item.fitnessScore,
+			} as Fitness
+		}
+		if (item.fitnessScore === 1) {
+			console.log('PERFECT RESULT FOUND')
+		}
+		return acc
 	})
 }
 
@@ -272,50 +287,58 @@ const chooseCouple = (roulette: RouletteWheel): Couple => {
 
 const checkCrossOver = () => {
 	const chance = Math.random()
-	console.log('Chance: ', chance)
-	console.log('crossOverRate: ', crossOverRate)
+	// console.log('Chance: ', chance)
+	// console.log('crossOverRate: ', crossOverRate)
 
 	return chance < crossOverRate ? true : false
 }
 
 const checkMutation = () => {
 	const chance = Math.random()
-	console.log('Chance: ', chance)
-	console.log('mutationRate: ', mutationRate)
+	// console.log('Chance: ', chance)
+	// console.log('mutationRate: ', mutationRate)
 
 	return chance < mutationRate ? true : false
 }
 
-const divideChromChunks = (binChrom: number[]) => {
-	// return binChrom.reduce((acc, current, index) => {
-	// 	const chunkIndex = Math.floor(index / 4)
-	// 	if (!acc[chunkIndex]) {
-	// 		acc[chunkIndex] = [] // start a new chunk
-	// 	}
-	// 	acc[chunkIndex].push(current)
-	// 	return acc
-	// }, [])
+const divideChromChunks = (binChrom: number[]): Gene[] => {
+	const result = binChrom.reduce((resultArray: Gene[], number, index) => {
+		const chunkIndex = Math.floor(index / geneSize)
+
+		if (!resultArray[chunkIndex]) {
+			resultArray[chunkIndex] = [] // start a new chunk
+		}
+
+		const bit = createBit(number)
+		resultArray[chunkIndex].push(bit)
+
+		return resultArray
+	}, [])
+
+	// console.log('result: ', result)
+	return result
 }
 
-const mutateChromossomes = (
-	chromossomeBin: number[]
-): (number | undefined)[] => {
+const mutateChromossomes = (chromossomeBin: number[]): number[] => {
 	return chromossomeBin.map((number) => {
 		if (checkMutation()) {
 			console.log('--> MUTATION HAPPENED')
-			if (number === 1) return 0
-			if (number === 0) return 1
+			if (number === 1) {
+				return 0
+			} else {
+				return 1
+			}
 		} else {
 			return number
 		}
 	})
 }
 
-const crossOver = (couple: Couple) => {
+const crossOver = (couple: Couple): Population => {
 	const firstParent = couple.chromossome1.flat()
 	const secondParent = couple.chromossome2.flat()
 	const whereToSwap = Math.floor(Math.random() * chromossomeSize * 4)
-	console.log('whereToSwap: ', whereToSwap)
+	console.log('--> whereToSwap: ', whereToSwap)
 
 	const firstChromBin = firstParent
 		.slice(0, whereToSwap)
@@ -325,33 +348,67 @@ const crossOver = (couple: Couple) => {
 		.slice(0, whereToSwap)
 		.concat(firstParent.slice(whereToSwap))
 
-	console.log('firstChromBin: ', firstChromBin)
-	console.log('secondChromBin: ', secondChromBin)
+	// console.log('firstChromBin: ', firstChromBin)
+	// console.log('secondChromBin: ', secondChromBin)
 
 	const mutatedFirstChromBin = mutateChromossomes(firstChromBin)
 	const mutatedSecondChromBin = mutateChromossomes(secondChromBin)
-	console.log('mutatedFirstChromBin: ', mutatedFirstChromBin)
-	console.log('mutatedSecondChromBin: ', mutatedSecondChromBin)
+	// console.log('mutatedFirstChromBin: ', mutatedFirstChromBin)
+	// console.log('mutatedSecondChromBin: ', mutatedSecondChromBin)
 	// return new couple, after transforming them back into chromossomes
+	const mutatedFirstChrom = divideChromChunks(mutatedFirstChromBin)
+	const mutatedSecondChrom = divideChromChunks(mutatedSecondChromBin)
+	console.log('mutatedFirstChrom: ', mutatedFirstChrom)
+	console.log('mutatedSecondChrom: ', mutatedSecondChrom)
+	return [mutatedFirstChrom, mutatedSecondChrom]
 }
 
 const chromossomeSize = 10
-const populationSize = 5
+const populationSize = 6
+const geneSize = 4
 const goal = 23
+const crossOverRate = 0.7
+const mutationRate = 0.001
+const numberOfGenerations = 5
 const initialPopulation: Population = createPopulation(
 	populationSize,
 	chromossomeSize
 )
-const crossOverRate = 0.7
-const mutationRate = 0.001
 
 const gameLoop = () => {
-	const firstGenFitnessScore = groupFitnessScore(initialPopulation)
-	const roulette = makeRouletteWheel(firstGenFitnessScore)
-	const couple = chooseCouple(roulette)
-	const chanceForCrossOver = checkCrossOver()
-	const newChromossome = chanceForCrossOver ? crossOver(couple) : couple
+	const genFitnessScore = groupFitnessScore(initialPopulation)
+	const bestFitness = checkWinnerFitnessScore(genFitnessScore)
+	if (bestFitness.fitnessScore === 1) {
+		console.log('THE END! PERFECT FITNESS FOUND!!')
+		return bestFitness
+	}
+	const roulette = makeRouletteWheel(genFitnessScore)
+
+	// const newPopulation: Population = new Array(populationSize)
+	const newPopulation: Population = roulette.reduce(
+		(acc: Chromossome[], item, index) => {
+			if (acc.length === populationSize) {
+				return acc
+			} else {
+				if (checkCrossOver()) {
+					const couple = chooseCouple(roulette)
+					const children = crossOver(couple)
+					return acc.concat(children)
+				} else {
+					return acc
+				}
+			}
+		},
+		[]
+	)
+	console.log('newPopulation: ', newPopulation)
+	// const newPopulation = new Array(populationSize).map((newChrom) => {
+	// can't add a couple
+	// })
+	// const newChromossome = if (chanceForCrossOver) crossOver(couple)
 	// return couple
+
+	// it should return the best fit OR the perfect fit if it is found before the last generation
 }
 
 console.log('-> gameLoop:', gameLoop())
