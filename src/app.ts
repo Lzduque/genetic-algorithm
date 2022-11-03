@@ -58,7 +58,9 @@ const checkFitnessScore = (chromossome: Chromossome): number => {
 	const cleanupChromossome: string[] = cleanup(decodedChromossome)
 	// console.log('cleanupChromossome: ', cleanupChromossome)
 	const result = calculateEq(cleanupChromossome)
-	// console.log('result: ', result)
+	if (!result) {
+		// console.log('--->Result: ', result)
+	}
 	const denominator = goal - result < 0 ? result - goal : goal - result
 	return 1 / denominator
 }
@@ -66,6 +68,8 @@ const checkFitnessScore = (chromossome: Chromossome): number => {
 const groupFitnessScore = (population: Population): PopulationFitness => {
 	return population.map((chrom: Chromossome) => {
 		const fitness = checkFitnessScore(chrom)
+		// console.log('chrom: ', chrom)
+		// console.log('fitness: ', fitness)
 		if (fitness === 1) {
 			console.log('PERFECT RESULT FOUND')
 			return {chromossome: chrom, fitnessScore: fitness}
@@ -85,6 +89,7 @@ const checkWinnerFitnessScore = (population: PopulationFitness): Fitness => {
 		if (item.fitnessScore === 1) {
 			console.log('PERFECT RESULT FOUND')
 		}
+		// console.log('acc: ', acc)
 		return acc
 	})
 }
@@ -172,7 +177,13 @@ const calculateEq = (equation: string[]): number => {
 					const secondNum = acc[index + 1]
 					// console.log('-> firstNum: ', firstNum)
 					// console.log('-> secondNum: ', secondNum)
-					const x = String(Number(firstNum) / Number(secondNum))
+					// if (secondNum == '0') {
+					// 	console.log('----> POSSIBLE INFINITY ERROR')
+					// }
+					const x =
+						Number(secondNum) === 0
+							? '0'
+							: String(Number(firstNum) / Number(secondNum))
 					const startEq = acc.slice(0, index - 1)
 					const endEq = acc.slice(index + 2)
 					return [...startEq, x, ...endEq]
@@ -240,10 +251,16 @@ const makeRouletteWheel = (popfitness: PopulationFitness): RouletteWheel => {
 			start: positionStart,
 			end: positionEnd,
 		}
+		// console.log('fitness.fitnessScore: ', fitness.fitnessScore)
+		// console.log('fitness: ', fitness)
 		positionStart = positionEnd
 		return piece
 	})
 	const proportionalRoulette = simpleRoulette.map((fitness) => {
+		// console.log('fitness.start: ', fitness.start)
+		// console.log('fitness.end: ', fitness.end)
+		// console.log('positionStart: ', positionStart)
+		// console.log('positionStart: ', positionStart)
 		const start = (100 * fitness.start) / positionStart
 		const end = (100 * fitness.end) / positionStart
 		const piece = {
@@ -261,22 +278,33 @@ const makeRouletteWheel = (popfitness: PopulationFitness): RouletteWheel => {
 
 const chooseCouple = (roulette: RouletteWheel): Couple => {
 	const firstNum = Math.floor(Math.random() * 100)
-	const firstChrom = roulette.filter(
-		(chrom) => chrom.start < firstNum && chrom.end > firstNum
-	)[0]
+	const firstChrom = roulette.filter((chrom) => {
+		// if (firstNum === 0) {
+		// 	console.log('chrom.start: ', chrom.start)
+		// 	console.log('chrom.end: ', chrom.end)
+		// 	console.log('firstNum: ', firstNum)
+		// }
+		return chrom.start <= firstNum && chrom.end > firstNum
+	})[0]
 
 	const secondNum = Math.floor(Math.random() * 100)
-	const secondChrom = roulette.filter(
-		(chrom) => chrom.start < secondNum && chrom.end > secondNum
-	)[0]
+	const secondChrom = roulette.filter((chrom) => {
+		// if (secondNum === 0) {
+		// 	console.log('chrom.start: ', chrom.start)
+		// 	console.log('chrom.end: ', chrom.end)
+		// 	console.log('secondNum: ', secondNum)
+		// }
+		return chrom.start <= secondNum && chrom.end > secondNum
+	})[0]
+
 	if (firstChrom === secondChrom) {
 		console.log('----------> SAME CHROMOSSOME PICKED!!!')
 		return chooseCouple(roulette)
 	} else {
-		console.log('firstNum: ', firstNum)
-		console.log('secondNum: ', secondNum)
-		console.log('firstChrom: ', firstChrom)
-		console.log('secondChrom: ', secondChrom)
+		// console.log('firstNum: ', firstNum)
+		// console.log('secondNum: ', secondNum)
+		// console.log('firstChrom: ', firstChrom)
+		// console.log('secondChrom: ', secondChrom)
 
 		return {
 			chromossome1: firstChrom.chromossome,
@@ -375,11 +403,14 @@ const initialPopulation: Population = createPopulation(
 	chromossomeSize
 )
 
-const gameLoop = () => {
+const gameLoop = (population: Population, iteration: number) => {
 	const genFitnessScore = groupFitnessScore(initialPopulation)
 	const bestFitness = checkWinnerFitnessScore(genFitnessScore)
 	if (bestFitness.fitnessScore === 1) {
 		console.log('THE END! PERFECT FITNESS FOUND!!')
+		return bestFitness
+	} else if (iteration === numberOfGenerations) {
+		console.log('THE END! best result found...')
 		return bestFitness
 	}
 	const roulette = makeRouletteWheel(genFitnessScore)
@@ -402,16 +433,11 @@ const gameLoop = () => {
 		[]
 	)
 	console.log('newPopulation: ', newPopulation)
-	// const newPopulation = new Array(populationSize).map((newChrom) => {
-	// can't add a couple
-	// })
-	// const newChromossome = if (chanceForCrossOver) crossOver(couple)
-	// return couple
-
+	gameLoop(newPopulation, iteration + 1)
 	// it should return the best fit OR the perfect fit if it is found before the last generation
 }
 
-console.log('-> gameLoop:', gameLoop())
+console.log('-> gameLoop:', gameLoop(initialPopulation, 1))
 
 // console.log(
 // 	'checkFitnessScore: ',
