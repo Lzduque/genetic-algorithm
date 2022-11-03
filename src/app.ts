@@ -58,11 +58,15 @@ const checkFitnessScore = (chromossome: Chromossome): number => {
 	const cleanupChromossome: string[] = cleanup(decodedChromossome)
 	// console.log('cleanupChromossome: ', cleanupChromossome)
 	const result = calculateEq(cleanupChromossome)
-	if (!result) {
-		// console.log('--->Result: ', result)
-	}
+	// if (!result) {
+	// console.log('--->Result: ', result)
+	// }
 	const denominator = goal - result < 0 ? result - goal : goal - result
-	return 1 / denominator
+	if (denominator === 0) {
+		return highNum
+	} else {
+		return 1 / denominator
+	}
 }
 
 const groupFitnessScore = (population: Population): PopulationFitness => {
@@ -70,7 +74,7 @@ const groupFitnessScore = (population: Population): PopulationFitness => {
 		const fitness = checkFitnessScore(chrom)
 		// console.log('chrom: ', chrom)
 		// console.log('fitness: ', fitness)
-		if (fitness === 1) {
+		if (fitness === highNum) {
 			console.log('PERFECT RESULT FOUND')
 			return {chromossome: chrom, fitnessScore: fitness}
 		}
@@ -86,7 +90,7 @@ const checkWinnerFitnessScore = (population: PopulationFitness): Fitness => {
 				fitnessScore: item.fitnessScore,
 			} as Fitness
 		}
-		if (item.fitnessScore === 1) {
+		if (item.fitnessScore === highNum) {
 			console.log('PERFECT RESULT FOUND')
 		}
 		// console.log('acc: ', acc)
@@ -362,7 +366,7 @@ const mutateChromossomes = (chromossomeBin: number[]): number[] => {
 	})
 }
 
-const crossOver = (couple: Couple): Population => {
+const crossOver = (couple: Couple): Couple => {
 	const firstParent = couple.chromossome1.flat()
 	const secondParent = couple.chromossome2.flat()
 	const whereToSwap = Math.floor(Math.random() * chromossomeSize * 4)
@@ -388,9 +392,13 @@ const crossOver = (couple: Couple): Population => {
 	const mutatedSecondChrom = divideChromChunks(mutatedSecondChromBin)
 	console.log('mutatedFirstChrom: ', mutatedFirstChrom)
 	console.log('mutatedSecondChrom: ', mutatedSecondChrom)
-	return [mutatedFirstChrom, mutatedSecondChrom]
+	return {
+		chromossome1: mutatedFirstChrom,
+		chromossome2: mutatedSecondChrom,
+	}
 }
 
+const highNum = 10 ** 6
 const chromossomeSize = 10
 const populationSize = 6
 const geneSize = 4
@@ -404,9 +412,9 @@ const initialPopulation: Population = createPopulation(
 )
 
 const gameLoop = (population: Population, iteration: number) => {
-	const genFitnessScore = groupFitnessScore(initialPopulation)
+	const genFitnessScore = groupFitnessScore(population)
 	const bestFitness = checkWinnerFitnessScore(genFitnessScore)
-	if (bestFitness.fitnessScore === 1) {
+	if (bestFitness.fitnessScore === highNum) {
 		console.log('THE END! PERFECT FITNESS FOUND!!')
 		return bestFitness
 	} else if (iteration === numberOfGenerations) {
@@ -421,12 +429,16 @@ const gameLoop = (population: Population, iteration: number) => {
 			if (acc.length === populationSize) {
 				return acc
 			} else {
+				const couple = chooseCouple(roulette)
 				if (checkCrossOver()) {
-					const couple = chooseCouple(roulette)
 					const children = crossOver(couple)
-					return acc.concat(children)
+					return [
+						...acc,
+						children.chromossome1,
+						children.chromossome2,
+					]
 				} else {
-					return acc
+					return [...acc, couple.chromossome1, couple.chromossome2]
 				}
 			}
 		},
