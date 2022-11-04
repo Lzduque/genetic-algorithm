@@ -3,14 +3,14 @@
 // TYPES
 type Bit = number
 type Gene = Bit[]
-type Chromossome = Gene[]
-type Population = Chromossome[]
-type Fitness = {chromossome: Chromossome; fitnessScore: number}
+type Chromosome = Gene[]
+type Population = Chromosome[]
+type Fitness = {chromosome: Chromosome; fitnessScore: number}
 type PopulationFitness = Fitness[]
-type RouletteWheel = {chromossome: Chromossome; start: number; end: number}[]
+type RouletteWheel = {chromosome: Chromosome; start: number; end: number}[]
 type Couple = {
-	chromossome1: Chromossome
-	chromossome2: Chromossome
+	chromosome1: Chromosome
+	chromosome2: Chromosome
 }
 
 const translation: {[index: string]: string} = {
@@ -32,14 +32,14 @@ const translation: {[index: string]: string} = {
 
 const createPopulation = (popSize: number, chromSize: number): Population => {
 	return Array.apply(null, Array(popSize)).map(() => {
-		const chrom = createChromossome(chromSize)
+		const chrom = createChromosome(chromSize)
 		// console.log('chrom: ', chrom)
 		return chrom
 	}) as Population
 }
 
-const createChromossome = (size: number): Chromossome => {
-	return Array.apply(null, Array(size)).map(() => createGene()) as Chromossome
+const createChromosome = (size: number): Chromosome => {
+	return Array.apply(null, Array(size)).map(() => createGene()) as Chromosome
 }
 
 const createGene = (): Gene => {
@@ -50,14 +50,14 @@ const createBit = (num = 2): Bit => {
 	return num >= 2 ? (Math.floor(Math.random() * 2) as Bit) : (num as Bit)
 }
 
-const checkFitnessScore = (chromossome: Chromossome): number => {
-	const decodedChromossome = chromossome.map((gene: Gene) => {
+const checkFitnessScore = (chromosome: Chromosome): number => {
+	const decodedChromosome = chromosome.map((gene: Gene) => {
 		return decode(gene)
 	})
-	// console.log('decodedChromossome: ', decodedChromossome)
-	const cleanupChromossome: string[] = cleanup(decodedChromossome)
-	// console.log('cleanupChromossome: ', cleanupChromossome)
-	const result = calculateEq(cleanupChromossome)
+	// console.log('decodedChromosome: ', decodedChromosome)
+	const cleanupChromosome: string[] = cleanup(decodedChromosome)
+	// console.log('cleanupChromosome: ', cleanupChromosome)
+	const result = calculateEq(cleanupChromosome)
 	// if (!result) {
 	// console.log('--->Result: ', result)
 	// }
@@ -70,15 +70,15 @@ const checkFitnessScore = (chromossome: Chromossome): number => {
 }
 
 const groupFitnessScore = (population: Population): PopulationFitness => {
-	return population.map((chrom: Chromossome) => {
+	return population.map((chrom: Chromosome) => {
 		const fitness = checkFitnessScore(chrom)
 		// console.log('chrom: ', chrom)
 		// console.log('fitness: ', fitness)
 		if (fitness === highNum) {
-			console.log('PERFECT RESULT FOUND')
-			return {chromossome: chrom, fitnessScore: fitness}
+			// console.log('PERFECT RESULT FOUND')
+			return {chromosome: chrom, fitnessScore: fitness}
 		}
-		return {chromossome: chrom, fitnessScore: fitness}
+		return {chromosome: chrom, fitnessScore: fitness}
 	})
 }
 
@@ -86,13 +86,13 @@ const checkWinnerFitnessScore = (population: PopulationFitness): Fitness => {
 	return population.reduce((acc, item: Fitness) => {
 		if (item.fitnessScore > acc.fitnessScore) {
 			acc = {
-				chromossome: item.chromossome,
+				chromosome: item.chromosome,
 				fitnessScore: item.fitnessScore,
 			} as Fitness
 		}
-		if (item.fitnessScore === highNum) {
-			console.log('PERFECT RESULT FOUND')
-		}
+		// if (item.fitnessScore === highNum) {
+		// console.log('PERFECT RESULT FOUND')
+		// }
 		// console.log('acc: ', acc)
 		return acc
 	})
@@ -251,7 +251,7 @@ const makeRouletteWheel = (popfitness: PopulationFitness): RouletteWheel => {
 	const simpleRoulette = popfitness.map((fitness: Fitness) => {
 		const positionEnd = positionStart + fitness.fitnessScore
 		const piece = {
-			chromossome: fitness.chromossome,
+			chromosome: fitness.chromosome,
 			start: positionStart,
 			end: positionEnd,
 		}
@@ -268,12 +268,12 @@ const makeRouletteWheel = (popfitness: PopulationFitness): RouletteWheel => {
 		const start = (100 * fitness.start) / positionStart
 		const end = (100 * fitness.end) / positionStart
 		const piece = {
-			chromossome: fitness.chromossome,
+			chromosome: fitness.chromosome,
 			start: start,
 			end: end,
 		}
-		console.log('start: ', start)
-		console.log('end: ', end)
+		// console.log('start: ', start)
+		// console.log('end: ', end)
 		return piece
 	})
 
@@ -302,7 +302,7 @@ const chooseCouple = (roulette: RouletteWheel): Couple => {
 	})[0]
 
 	if (firstChrom === secondChrom) {
-		console.log('----------> SAME CHROMOSSOME PICKED!!!')
+		// console.log('----------> SAME CHROMOSSOME PICKED!!!')
 		return chooseCouple(roulette)
 	} else {
 		// console.log('firstNum: ', firstNum)
@@ -311,8 +311,8 @@ const chooseCouple = (roulette: RouletteWheel): Couple => {
 		// console.log('secondChrom: ', secondChrom)
 
 		return {
-			chromossome1: firstChrom.chromossome,
-			chromossome2: secondChrom.chromossome,
+			chromosome1: firstChrom.chromosome,
+			chromosome2: secondChrom.chromosome,
 		}
 	}
 }
@@ -351,10 +351,10 @@ const divideChromChunks = (binChrom: number[]): Gene[] => {
 	return result
 }
 
-const mutateChromossomes = (chromossomeBin: number[]): number[] => {
-	return chromossomeBin.map((number) => {
+const mutateChromosomes = (chromosomeBin: number[]): number[] => {
+	return chromosomeBin.map((number) => {
 		if (checkMutation()) {
-			console.log('--> MUTATION HAPPENED')
+			// console.log('--> MUTATION HAPPENED')
 			if (number === 1) {
 				return 0
 			} else {
@@ -367,10 +367,10 @@ const mutateChromossomes = (chromossomeBin: number[]): number[] => {
 }
 
 const crossOver = (couple: Couple): Couple => {
-	const firstParent = couple.chromossome1.flat()
-	const secondParent = couple.chromossome2.flat()
-	const whereToSwap = Math.floor(Math.random() * chromossomeSize * 4)
-	console.log('--> whereToSwap: ', whereToSwap)
+	const firstParent = couple.chromosome1.flat()
+	const secondParent = couple.chromosome2.flat()
+	const whereToSwap = Math.floor(Math.random() * chromosomeSize * 4)
+	// console.log('--> whereToSwap: ', whereToSwap)
 
 	const firstChromBin = firstParent
 		.slice(0, whereToSwap)
@@ -383,70 +383,76 @@ const crossOver = (couple: Couple): Couple => {
 	// console.log('firstChromBin: ', firstChromBin)
 	// console.log('secondChromBin: ', secondChromBin)
 
-	const mutatedFirstChromBin = mutateChromossomes(firstChromBin)
-	const mutatedSecondChromBin = mutateChromossomes(secondChromBin)
+	const mutatedFirstChromBin = mutateChromosomes(firstChromBin)
+	const mutatedSecondChromBin = mutateChromosomes(secondChromBin)
 	// console.log('mutatedFirstChromBin: ', mutatedFirstChromBin)
 	// console.log('mutatedSecondChromBin: ', mutatedSecondChromBin)
-	// return new couple, after transforming them back into chromossomes
+	// return new couple, after transforming them back into chromosomes
 	const mutatedFirstChrom = divideChromChunks(mutatedFirstChromBin)
 	const mutatedSecondChrom = divideChromChunks(mutatedSecondChromBin)
-	console.log('mutatedFirstChrom: ', mutatedFirstChrom)
-	console.log('mutatedSecondChrom: ', mutatedSecondChrom)
+	// console.log('mutatedFirstChrom: ', mutatedFirstChrom)
+	// console.log('mutatedSecondChrom: ', mutatedSecondChrom)
 	return {
-		chromossome1: mutatedFirstChrom,
-		chromossome2: mutatedSecondChrom,
+		chromosome1: mutatedFirstChrom,
+		chromosome2: mutatedSecondChrom,
 	}
 }
 
+const chromosomeSize = 20
+const populationSize = 200
+const numberOfGenerations = 20
 const highNum = 10 ** 6
-const chromossomeSize = 10
-const populationSize = 6
 const geneSize = 4
-const goal = 23
+const goal = 43
 const crossOverRate = 0.7
 const mutationRate = 0.001
-const numberOfGenerations = 5
 const initialPopulation: Population = createPopulation(
 	populationSize,
-	chromossomeSize
+	chromosomeSize
 )
 
-const gameLoop = (population: Population, iteration: number) => {
+const gameLoop = (population: Population, iteration: number): Fitness => {
+	console.log('Iteration: ', iteration)
 	const genFitnessScore = groupFitnessScore(population)
 	const bestFitness = checkWinnerFitnessScore(genFitnessScore)
 	if (bestFitness.fitnessScore === highNum) {
 		console.log('THE END! PERFECT FITNESS FOUND!!')
+		const decodedWinner = bestFitness.chromosome.map((gene) => decode(gene))
+		const cleanedWinner = cleanup(decodedWinner)
+		const result = calculateEq(cleanedWinner)
+		console.log('Winner: ', cleanedWinner)
+		console.log('Winner result: ', result)
 		return bestFitness
 	} else if (iteration === numberOfGenerations) {
 		console.log('THE END! best result found...')
+		const decodedWinner = bestFitness.chromosome.map((gene) => decode(gene))
+		const cleanedWinner = cleanup(decodedWinner)
+		const result = calculateEq(cleanedWinner)
+		console.log('Winner: ', cleanedWinner)
+		console.log('Winner result: ', result)
 		return bestFitness
 	}
 	const roulette = makeRouletteWheel(genFitnessScore)
 
 	// const newPopulation: Population = new Array(populationSize)
 	const newPopulation: Population = roulette.reduce(
-		(acc: Chromossome[], item, index) => {
+		(acc: Chromosome[], item, index) => {
 			if (acc.length === populationSize) {
 				return acc
 			} else {
 				const couple = chooseCouple(roulette)
 				if (checkCrossOver()) {
 					const children = crossOver(couple)
-					return [
-						...acc,
-						children.chromossome1,
-						children.chromossome2,
-					]
+					return [...acc, children.chromosome1, children.chromosome2]
 				} else {
-					return [...acc, couple.chromossome1, couple.chromossome2]
+					return [...acc, couple.chromosome1, couple.chromosome2]
 				}
 			}
 		},
 		[]
 	)
-	console.log('newPopulation: ', newPopulation)
-	gameLoop(newPopulation, iteration + 1)
-	// it should return the best fit OR the perfect fit if it is found before the last generation
+	// console.log('newPopulation: ', newPopulation)
+	return gameLoop(newPopulation, iteration + 1)
 }
 
 console.log('-> gameLoop:', gameLoop(initialPopulation, 1))
@@ -466,7 +472,7 @@ console.log('-> gameLoop:', gameLoop(initialPopulation, 1))
 // 		[1, 1, 1, 1],
 // 		[1, 0, 1, 0],
 // 		[1, 0, 0, 1],
-// 	] as unknown as Chromossome)
+// 	] as unknown as Chromosome)
 // )
 
 // console.log(
@@ -482,7 +488,7 @@ console.log('-> gameLoop:', gameLoop(initialPopulation, 1))
 //     [ 1, 1, 0, 0 ],
 //     [ 0, 1, 0, 0 ],
 //     [ 1, 1, 1, 1 ]
-//   ] as unknown as Chromossome)
+//   ] as unknown as Chromosome)
 // )
 
 // console.log(
