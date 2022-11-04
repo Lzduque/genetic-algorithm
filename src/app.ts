@@ -4,9 +4,9 @@
 type Bit = number
 type Gene = Bit[]
 export type Chromosome = Gene[]
-type Population = Chromosome[]
+export type Population = Chromosome[]
 type Fitness = {chromosome: Chromosome; fitnessScore: number}
-type PopulationFitness = Fitness[]
+export type PopulationFitness = Fitness[]
 type RouletteWheel = {chromosome: Chromosome; start: number; end: number}[]
 type Couple = {
 	chromosome1: Chromosome
@@ -57,11 +57,7 @@ export const checkFitnessScore = (chromosome: Chromosome): number => {
 		return decode(gene)
 	})
 	const cleanupChromosome: string[] = cleanup(decodedChromosome)
-	// console.log('cleanupChromosome: ', cleanupChromosome)
 	const result = calculateEq(cleanupChromosome)
-	// if (!result) {
-	// console.log('--->Result: ', result)
-	// }
 	const denominator = goal - result < 0 ? result - goal : goal - result
 	if (denominator === 0) {
 		return highNum
@@ -70,20 +66,18 @@ export const checkFitnessScore = (chromosome: Chromosome): number => {
 	}
 }
 
-const groupFitnessScore = (population: Population): PopulationFitness => {
+export const groupFitnessScore = (
+	population: Population
+): PopulationFitness => {
 	return population.map((chrom: Chromosome) => {
 		const fitness = checkFitnessScore(chrom)
-		// console.log('chrom: ', chrom)
-		// console.log('fitness: ', fitness)
-		if (fitness === highNum) {
-			// console.log('PERFECT RESULT FOUND')
-			return {chromosome: chrom, fitnessScore: fitness}
-		}
 		return {chromosome: chrom, fitnessScore: fitness}
 	})
 }
 
-const checkWinnerFitnessScore = (population: PopulationFitness): Fitness => {
+export const checkWinnerFitnessScore = (
+	population: PopulationFitness
+): Fitness => {
 	return population.reduce((acc, item: Fitness) => {
 		if (item.fitnessScore > acc.fitnessScore) {
 			acc = {
@@ -91,22 +85,18 @@ const checkWinnerFitnessScore = (population: PopulationFitness): Fitness => {
 				fitnessScore: item.fitnessScore,
 			} as Fitness
 		}
-		// if (item.fitnessScore === highNum) {
-		// console.log('PERFECT RESULT FOUND')
-		// }
-		// console.log('acc: ', acc)
 		return acc
 	})
 }
 
-const decode = (gene: Gene): string => {
+export const decode = (gene: Gene): string => {
 	const stringGene = gene
 		.map((bit) => String(bit))
 		.reduce((pv, cv) => pv.concat(cv))
 	return translation[stringGene]
 }
 
-const cleanup = (equation: string[]): string[] => {
+export const cleanup = (equation: string[]): string[] => {
 	const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 	const symbols = ['+', '-', '*', '/']
 	const initialValue: {valueTrack: string; equation: string[]} = {
@@ -138,7 +128,6 @@ const cleanup = (equation: string[]): string[] => {
 		initialValue
 	).equation
 
-	// console.log('cleanedEq: ', cleanedEq)
 	return symbols.includes(cleanedEq[cleanedEq.length - 1])
 		? cleanedEq.slice(0, -1)
 		: cleanedEq
