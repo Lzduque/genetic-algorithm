@@ -40,23 +40,22 @@ export const createPopulation = (
 	}) as Population
 }
 
-const createChromosome = (size: number): Chromosome => {
+export const createChromosome = (size: number): Chromosome => {
 	return Array.apply(null, Array(size)).map(() => createGene()) as Chromosome
 }
 
-const createGene = (): Gene => {
+export const createGene = (): Gene => {
 	return Array.apply(null, Array(geneSize)).map(() => createBit()) as Gene
 }
 
-const createBit = (num = 2): Bit => {
+export const createBit = (num = 2): Bit => {
 	return num >= 2 ? (Math.floor(Math.random() * 2) as Bit) : (num as Bit)
 }
 
-const checkFitnessScore = (chromosome: Chromosome): number => {
+export const checkFitnessScore = (chromosome: Chromosome): number => {
 	const decodedChromosome = chromosome.map((gene: Gene) => {
 		return decode(gene)
 	})
-	// console.log('decodedChromosome: ', decodedChromosome)
 	const cleanupChromosome: string[] = cleanup(decodedChromosome)
 	// console.log('cleanupChromosome: ', cleanupChromosome)
 	const result = calculateEq(cleanupChromosome)
@@ -403,7 +402,7 @@ const crossOver = (couple: Couple): Couple => {
 const chromosomeSize = 20
 const populationSize = 200
 const numberOfGenerations = 20
-const highNum = 10 ** 6
+export const highNum = 10 ** 6
 const geneSize = 4
 const goal = 43
 const crossOverRate = 0.7
