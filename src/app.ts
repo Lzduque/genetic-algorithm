@@ -3,7 +3,7 @@
 // TYPES
 type Bit = number
 type Gene = Bit[]
-type Chromosome = Gene[]
+export type Chromosome = Gene[]
 type Population = Chromosome[]
 type Fitness = {chromosome: Chromosome; fitnessScore: number}
 type PopulationFitness = Fitness[]
@@ -30,10 +30,12 @@ const translation: {[index: string]: string} = {
 	'1101': '/',
 }
 
-const createPopulation = (popSize: number, chromSize: number): Population => {
+export const createPopulation = (
+	popSize: number,
+	chromSize: number
+): Population => {
 	return Array.apply(null, Array(popSize)).map(() => {
 		const chrom = createChromosome(chromSize)
-		// console.log('chrom: ', chrom)
 		return chrom
 	}) as Population
 }
@@ -434,7 +436,6 @@ const gameLoop = (population: Population, iteration: number): Fitness => {
 	}
 	const roulette = makeRouletteWheel(genFitnessScore)
 
-	// const newPopulation: Population = new Array(populationSize)
 	const newPopulation: Population = roulette.reduce(
 		(acc: Chromosome[], item, index) => {
 			if (acc.length === populationSize) {
