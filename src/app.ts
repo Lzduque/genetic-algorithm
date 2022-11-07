@@ -133,47 +133,33 @@ export const cleanup = (equation: string[]): string[] => {
 		: cleanedEq
 }
 
-const calculateEq = (equation: string[]): number => {
+export const calculateEq = (equation: string[]): number => {
 	const firstOp = ['*', '/']
 	const secondOp = ['+', '-']
-	if (equation.length <= 1) {
-		// console.log('Equation is short')
+	if (equation.length === 0) return 0
+	if (equation.length === 1) {
+		if (firstOp.includes(equation[0])) return 0
+		else if (secondOp.includes(equation[0])) return 0
+		else return Number(equation[0])
+	}
+	if (equation.length === 2) {
 		return Number(equation[0])
 	}
 	const firstResult = equation.reduce(
 		(acc: string[], current: string): string[] => {
 			if (firstOp.includes(current)) {
-				// console.log('acc: ', acc)
-				// console.log('current: ', current)
 				if (acc.indexOf('*') > -1) {
-					// console.log('--> multiplication')
 					const index = acc.indexOf('*')
 					const firstNum = acc[index - 1]
 					const secondNum = acc[index + 1]
-					// console.log('-> firstNum: ', firstNum)
-					// console.log('-> secondNum: ', secondNum)
 					const x = String(Number(firstNum) * Number(secondNum))
 					const startEq = acc.slice(0, index - 1)
 					const endEq = acc.slice(index + 2)
-					// console.log('--> x: ', x)
-					// console.log('--> startEq: ', startEq)
-					// console.log('--> endEq: ', endEq)
-					// console.log('--> [...startEq, x, ...endEq]: ', [
-					// 	...startEq,
-					// 	x,
-					// 	...endEq,
-					// ])
 					return [...startEq, x, ...endEq]
 				} else {
-					// console.log('--> division')
 					const index = acc.indexOf('/')
 					const firstNum = acc[index - 1]
 					const secondNum = acc[index + 1]
-					// console.log('-> firstNum: ', firstNum)
-					// console.log('-> secondNum: ', secondNum)
-					// if (secondNum == '0') {
-					// 	console.log('----> POSSIBLE INFINITY ERROR')
-					// }
 					const x =
 						Number(secondNum) === 0
 							? '0'
@@ -188,38 +174,21 @@ const calculateEq = (equation: string[]): number => {
 		},
 		equation
 	)
-	// console.log('firstResult: ', firstResult)
 	const secondResult = firstResult.reduce(
 		(acc: string[], current: string): string[] => {
 			if (secondOp.includes(current)) {
-				// console.log('acc: ', acc)
-				// console.log('current: ', current)
 				if (acc.indexOf('+') > -1) {
-					// console.log('--> addition')
 					const index = acc.indexOf('+')
 					const firstNum = acc[index - 1]
 					const secondNum = acc[index + 1]
-					// console.log('-> firstNum: ', firstNum)
-					// console.log('-> secondNum: ', secondNum)
 					const x = String(Number(firstNum) + Number(secondNum))
 					const startEq = acc.slice(0, index - 1)
 					const endEq = acc.slice(index + 2)
-					// console.log('--> x: ', x)
-					// console.log('--> startEq: ', startEq)
-					// console.log('--> endEq: ', endEq)
-					// console.log('--> [...startEq, x, ...endEq]: ', [
-					// 	...startEq,
-					// 	x,
-					// 	...endEq,
-					// ])
 					return [...startEq, x, ...endEq]
 				} else {
-					// console.log('--> subtraction')
 					const index = acc.indexOf('-')
 					const firstNum = acc[index - 1]
 					const secondNum = acc[index + 1]
-					// console.log('-> firstNum: ', firstNum)
-					// console.log('-> secondNum: ', secondNum)
 					const x = String(Number(firstNum) - Number(secondNum))
 					const startEq = acc.slice(0, index - 1)
 					const endEq = acc.slice(index + 2)
@@ -231,8 +200,6 @@ const calculateEq = (equation: string[]): number => {
 		},
 		firstResult
 	)
-	// console.log('secondResult: ', secondResult)
-	// console.log('result: ', Number(secondResult[0]))
 	return Number(secondResult[0])
 }
 

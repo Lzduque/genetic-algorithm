@@ -13,6 +13,7 @@ import {
 	PopulationFitness,
 	decode,
 	cleanup,
+	calculateEq,
 } from '../app'
 
 test('create a chromosome population', () => {
@@ -292,7 +293,7 @@ test('check decoding genes', () => {
 })
 
 test('check cleaning up equations', () => {
-	const decodedGene1 = [
+	const decodedChrom1 = [
 		'+',
 		undefined,
 		'6',
@@ -314,7 +315,7 @@ test('check cleaning up equations', () => {
 		'0',
 		'5',
 	] as string[]
-	const decodedGene2 = [
+	const decodedChrom2 = [
 		'2',
 		undefined,
 		'6',
@@ -336,10 +337,14 @@ test('check cleaning up equations', () => {
 		'0',
 		'5',
 	] as string[]
-	const cleanupGene1 = cleanup(decodedGene1)
-	const cleanupGene2 = cleanup(decodedGene2)
-	expect(cleanupGene1).toStrictEqual(['6', '*', '6', '+', '7'])
-	expect(cleanupGene2).toStrictEqual([
+	const decodedChrom3 = ['2', '4', '+', '*', '/', 'undefined'] as string[]
+	const decodedChrom4 = ['+', '*', '/', 'undefined'] as string[]
+	const cleanupChrom1 = cleanup(decodedChrom1)
+	const cleanupChrom2 = cleanup(decodedChrom2)
+	const cleanupChrom3 = cleanup(decodedChrom3)
+	const cleanupChrom4 = cleanup(decodedChrom4)
+	expect(cleanupChrom1).toStrictEqual(['6', '*', '6', '+', '7'])
+	expect(cleanupChrom2).toStrictEqual([
 		'2',
 		'+',
 		'6',
@@ -350,6 +355,34 @@ test('check cleaning up equations', () => {
 		'+',
 		'0',
 	])
+	expect(cleanupChrom3).toStrictEqual(['2'])
+	expect(cleanupChrom4).toStrictEqual([])
 })
 
-// add an argument to functions that have random called testing that is a boolean. The default is false, but if it is a test a call it with true.
+test('check calculate equations', () => {
+	const cleanupChrom1 = ['6', '*', '6', '+', '7'] as string[]
+	const cleanupChrom2 = [
+		'2',
+		'+',
+		'6',
+		'*',
+		'6',
+		'/',
+		'0',
+		'+',
+		'0',
+	] as string[]
+	const cleanupChrom3 = ['+'] as string[] // shouldn't happen because of the cleanup function
+	const cleanupChrom4 = ['2', '+'] as string[] // shouldn't happen because of the cleanup function
+	const cleanupChrom5 = [] as string[]
+	const resultChrom1 = calculateEq(cleanupChrom1)
+	const resultChrom2 = calculateEq(cleanupChrom2)
+	const resultChrom3 = calculateEq(cleanupChrom3)
+	const resultChrom4 = calculateEq(cleanupChrom4)
+	const resultChrom5 = calculateEq(cleanupChrom5)
+	expect(resultChrom1).toBe(43)
+	expect(resultChrom2).toBe(2)
+	expect(resultChrom3).toBe(0)
+	expect(resultChrom4).toBe(2)
+	expect(resultChrom5).toBe(0)
+})
