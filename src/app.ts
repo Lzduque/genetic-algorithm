@@ -7,8 +7,12 @@ export type Chromosome = Gene[]
 export type Population = Chromosome[]
 type Fitness = {chromosome: Chromosome; fitnessScore: number}
 export type PopulationFitness = Fitness[]
-type RouletteWheel = {chromosome: Chromosome; start: number; end: number}[]
-type Couple = {
+export type RouletteWheel = {
+	chromosome: Chromosome
+	start: number
+	end: number
+}[]
+export type Couple = {
 	chromosome1: Chromosome
 	chromosome2: Chromosome
 }
@@ -203,7 +207,9 @@ export const calculateEq = (equation: string[]): number => {
 	return Number(secondResult[0])
 }
 
-const makeRouletteWheel = (popfitness: PopulationFitness): RouletteWheel => {
+export const makeRouletteWheel = (
+	popfitness: PopulationFitness
+): RouletteWheel => {
 	var positionStart = 0
 	const simpleRoulette = popfitness.map((fitness: Fitness) => {
 		const positionEnd = positionStart + fitness.fitnessScore
@@ -212,61 +218,40 @@ const makeRouletteWheel = (popfitness: PopulationFitness): RouletteWheel => {
 			start: positionStart,
 			end: positionEnd,
 		}
-		// console.log('fitness.fitnessScore: ', fitness.fitnessScore)
-		// console.log('fitness: ', fitness)
 		positionStart = positionEnd
 		return piece
 	})
 	const proportionalRoulette = simpleRoulette.map((fitness) => {
-		// console.log('fitness.start: ', fitness.start)
-		// console.log('fitness.end: ', fitness.end)
-		// console.log('positionStart: ', positionStart)
-		// console.log('positionStart: ', positionStart)
 		const start = (100 * fitness.start) / positionStart
-		const end = (100 * fitness.end) / positionStart
+		const end =
+			(100 * fitness.end) / positionStart > 100
+				? 100
+				: (100 * fitness.end) / positionStart
 		const piece = {
 			chromosome: fitness.chromosome,
 			start: start,
 			end: end,
 		}
-		// console.log('start: ', start)
-		// console.log('end: ', end)
 		return piece
 	})
 
 	return proportionalRoulette
 }
 
-const chooseCouple = (roulette: RouletteWheel): Couple => {
+export const chooseCouple = (roulette: RouletteWheel): Couple => {
 	const firstNum = Math.floor(Math.random() * 100)
 	const firstChrom = roulette.filter((chrom) => {
-		// if (firstNum === 0) {
-		// 	console.log('chrom.start: ', chrom.start)
-		// 	console.log('chrom.end: ', chrom.end)
-		// 	console.log('firstNum: ', firstNum)
-		// }
 		return chrom.start <= firstNum && chrom.end > firstNum
 	})[0]
 
 	const secondNum = Math.floor(Math.random() * 100)
 	const secondChrom = roulette.filter((chrom) => {
-		// if (secondNum === 0) {
-		// 	console.log('chrom.start: ', chrom.start)
-		// 	console.log('chrom.end: ', chrom.end)
-		// 	console.log('secondNum: ', secondNum)
-		// }
 		return chrom.start <= secondNum && chrom.end > secondNum
 	})[0]
 
 	if (firstChrom === secondChrom) {
-		// console.log('----------> SAME CHROMOSSOME PICKED!!!')
 		return chooseCouple(roulette)
 	} else {
-		// console.log('firstNum: ', firstNum)
-		// console.log('secondNum: ', secondNum)
-		// console.log('firstChrom: ', firstChrom)
-		// console.log('secondChrom: ', secondChrom)
-
 		return {
 			chromosome1: firstChrom.chromosome,
 			chromosome2: secondChrom.chromosome,
@@ -274,23 +259,17 @@ const chooseCouple = (roulette: RouletteWheel): Couple => {
 	}
 }
 
-const checkCrossOver = () => {
+export const checkCrossOver = () => {
 	const chance = Math.random()
-	// console.log('Chance: ', chance)
-	// console.log('crossOverRate: ', crossOverRate)
-
 	return chance < crossOverRate ? true : false
 }
 
-const checkMutation = () => {
+export const checkMutation = () => {
 	const chance = Math.random()
-	// console.log('Chance: ', chance)
-	// console.log('mutationRate: ', mutationRate)
-
 	return chance < mutationRate ? true : false
 }
 
-const divideChromChunks = (binChrom: number[]): Gene[] => {
+export const divideChromChunks = (binChrom: number[]): Gene[] => {
 	const result = binChrom.reduce((resultArray: Gene[], number, index) => {
 		const chunkIndex = Math.floor(index / geneSize)
 
@@ -304,11 +283,10 @@ const divideChromChunks = (binChrom: number[]): Gene[] => {
 		return resultArray
 	}, [])
 
-	// console.log('result: ', result)
 	return result
 }
 
-const mutateChromosomes = (chromosomeBin: number[]): number[] => {
+export const mutateChromosomes = (chromosomeBin: number[]): number[] => {
 	return chromosomeBin.map((number) => {
 		if (checkMutation()) {
 			// console.log('--> MUTATION HAPPENED')
@@ -323,11 +301,10 @@ const mutateChromosomes = (chromosomeBin: number[]): number[] => {
 	})
 }
 
-const crossOver = (couple: Couple): Couple => {
+export const crossOver = (couple: Couple): Couple => {
 	const firstParent = couple.chromosome1.flat()
 	const secondParent = couple.chromosome2.flat()
 	const whereToSwap = Math.floor(Math.random() * chromosomeSize * 4)
-	// console.log('--> whereToSwap: ', whereToSwap)
 
 	const firstChromBin = firstParent
 		.slice(0, whereToSwap)
@@ -337,18 +314,10 @@ const crossOver = (couple: Couple): Couple => {
 		.slice(0, whereToSwap)
 		.concat(firstParent.slice(whereToSwap))
 
-	// console.log('firstChromBin: ', firstChromBin)
-	// console.log('secondChromBin: ', secondChromBin)
-
 	const mutatedFirstChromBin = mutateChromosomes(firstChromBin)
 	const mutatedSecondChromBin = mutateChromosomes(secondChromBin)
-	// console.log('mutatedFirstChromBin: ', mutatedFirstChromBin)
-	// console.log('mutatedSecondChromBin: ', mutatedSecondChromBin)
-	// return new couple, after transforming them back into chromosomes
 	const mutatedFirstChrom = divideChromChunks(mutatedFirstChromBin)
 	const mutatedSecondChrom = divideChromChunks(mutatedSecondChromBin)
-	// console.log('mutatedFirstChrom: ', mutatedFirstChrom)
-	// console.log('mutatedSecondChrom: ', mutatedSecondChrom)
 	return {
 		chromosome1: mutatedFirstChrom,
 		chromosome2: mutatedSecondChrom,
@@ -412,44 +381,3 @@ const gameLoop = (population: Population, iteration: number): Fitness => {
 }
 
 console.log('-> gameLoop:', gameLoop(initialPopulation, 1))
-
-// console.log(
-// 	'checkFitnessScore: ',
-// 	checkFitnessScore([
-// 		[0, 0, 1, 0],
-// 		[0, 0, 0, 0],
-// 		[1, 1, 0, 0],
-// 		[0, 1, 0, 0],
-// 		[0, 0, 0, 0],
-// 		[0, 0, 0, 0],
-// 		[1, 0, 1, 0],
-// 		[1, 1, 1, 1],
-// 		[1, 1, 1, 0],
-// 		[1, 1, 1, 1],
-// 		[1, 0, 1, 0],
-// 		[1, 0, 0, 1],
-// 	] as unknown as Chromosome)
-// )
-
-// console.log(
-// 	'checkFitnessScore: ',
-// 	checkFitnessScore([
-//     [ 1, 0, 1, 1 ],
-//     [ 0, 0, 0, 0 ],
-//     [ 1, 0, 0, 1 ],
-//     [ 1, 0, 1, 0 ],
-//     [ 1, 0, 1, 0 ],
-//     [ 1, 0, 1, 1 ],
-//     [ 0, 1, 1, 0 ],
-//     [ 1, 1, 0, 0 ],
-//     [ 0, 1, 0, 0 ],
-//     [ 1, 1, 1, 1 ]
-//   ] as unknown as Chromosome)
-// )
-
-// console.log(
-// 	"calculateEq ['2', '*', '4', '+', '6', '*', '9']: ",
-// 	calculateEq(['2', '*', '4', '+', '6', '*', '9'])
-// )
-// console.log("calculateEq ['6', '*', '8']: ", calculateEq(['6', '*', '8']))
-// console.log('createPopulation(5, 10): ', createPopulation(5, 10))
